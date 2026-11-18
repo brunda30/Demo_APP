@@ -7,7 +7,7 @@ st.caption("Practice and Prepare for your Interviews")
 
 try:
     client = Groq(api_key="GROQ_API_KEY")
-  except (KeyError, FileNotFoundError):
+  except(KeyError, FileNotFoundError):
     st.error("API Key is missing. Add it in Advanced settings")
     st.stop()
   
