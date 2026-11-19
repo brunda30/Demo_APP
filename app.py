@@ -1,25 +1,67 @@
 import streamlit as st
-from groq import Groq
-st.set_page_config(page_title="BRUNDASHREE T D",page_icon="🌸", layout="centered")
-st.title("🎓 Student Profile Application")
-st.caption("Developed by: BRUNDASHREE T D")
-try:
-  client=Groq(api_key=st.secrets["GROQ_API_KEY"])
-except (keyError, FileNotFoundError):
-  st.error("API key is missing. addit in advanced settings")
-  st.stop()
-name=st.text_area("Student Name","BRUNDASHREE T D")
-usn=st.text_area("USN / Roll no.","1SV24CS028")
-dept=st.text_area("Department","CSE")
-year=st.radio("Current Year",["1st year","2nd Year","3rd Year","4th Year"])
-btn=st.button("View My Profile")
-if btn:
-    st.success("Profile Created Successfully!")
-
-    st.subheader("🎓 Student Profile Details")
-
-    st.write("**Student Name:**", name)
-    st.write("**USN / Roll No.:**", usn)
-    st.write("**Department:**", dept)
-    st.write("**Current Year:**", year)
+st.set_page_config(
+    page_title="Student Profile Application",
+    layout="centered"
+)
+st.markdown("""
+<style>
+.stApp {
+    background-color: black;
+    color: white;
+}
+.block-container {
+    max-width: 850px;
+    padding-top: 2rem;
+}
+.profile-card {
+    background: #050505;
+    border: 1px solid #292929;
+    border-radius: 28px;
+    padding: 30px;
+}
+.stButton > button {
+    background: white;
+    color: black;
+    border-radius: 30px;
+    padding: 10px 25px;
+}
+</style>
+""", unsafe_allow_html=True)
+st.markdown("## Student Profile Application")
+st.write("Developed by Bhagirathi")
+st.info(
+    "Fill in your details and click View My Profile."
+)
+with st.form("student_form"):
+    name = st.text_input(
+        "Student Name",
+        placeholder="Enter your name"
+    )
+    usn = st.text_input(
+        "USN ",
+        placeholder="Enter USN"
+    )
+    department = st.selectbox(
+        "Department",
+        ["CSE", "ISE", "ECE", "EEE",
+         "ME", "CIVIL", "AIML", "Other"]
+    )
+    year = st.radio(
+        "Current Year",
+        ["1st Year", "2nd Year",
+         "3rd Year", "4th Year"]
+    )
+    submit = st.form_submit_button(
+        "View My Profile"
+    )
+if submit:
+    if name.strip() == "" or usn.strip() == "":
+        st.error("Please enter all details.")
+    else:
+        st.success("Profile Created Successfully!")
+        st.subheader("Student Profile")
+        st.write("**Student Name:**", name)
+        st.write("**USN :**", usn)
+        st.write("**Department:**", department)
+        st.write("**Current Year:**", year)
   
