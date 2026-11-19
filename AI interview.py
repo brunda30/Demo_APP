@@ -1,192 +1,79 @@
 import streamlit as st
-
-# Page configuration
-st.set_page_config(
-    page_title="LLM",
-    layout="centered"
-)
-
-# Application title
-st.title("AI Interview")
-st.caption("Practice and Prepare for your placement")
-
-# Import Groq safely
+from groq import Groq
+st.set_page_config(page_title='LLM', layout='centered')
+st.title('AI Interview')
+st.caption('Practice and Prepare for your placement')
+st.markdown("Launched by JAGRUTHI H G")
 try:
-    from groq import Groq
-except ImportError:
-    st.error("Groq package is not installed.")
-    st.info("Add groq to your requirements.txt file and redeploy.")
-    st.stop()
-
-# API configuration
-try:
-    client = Groq(
-        api_key=st.secrets["GROQ_API_KEY"]
-    )
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 except (KeyError, FileNotFoundError):
-    st.error("API key is missing. Add it in Streamlit Secrets.")
+    st.error("API key is missing. Add it in Advanced Settings.")
     st.stop()
-
-# Success message
-st.success("Groq API connected successfully!")
-
-st.write("Welcome to your AI Interview Assistant.")
-
-# Job role selection
-role = st.selectbox(
-    "Job Title",
-    [
-        "Machine Learning Engineer",
-        "Senior Software Engineering",
-        "Data Analysis",
-        "Cyber Security",
-        "Software Developer",
-        "Others"
-    ]
-)
-
+role = st.selectbox("Job Title", ["Machine Learning Engineer", "Senior Software Engineering", "Full Stack Engineer", "Backend Engineer", "Others"])
 if role == "Others":
     role = st.text_input("Enter your Job Title", "XXXXXX")
-
-# Model selection
 model = st.selectbox(
-    "Choose your model",
+    "Choose Your Model",
     [
         "openai/gpt-oss-120b",
         "openai/gpt-oss-20b"
     ]
 )
-
-# Difficulty level
 level = st.selectbox(
     "Choose your level",
     [
-        "Beginner",
-        "Intermediate",
-        "Advanced"
+        "Beginner", "Intermediate", "Advanced"
     ]
 )
-
-# Activity selection
-mode = st.radio(
-    "Activity",
-    [
-        "Generate Questions",
-        "Generate Code Questions",
-        "Evaluate Answers",
-        "Improve Answers"
-    ]
-)
-
-# Generate Questions
-if mode == "Generate Questions":
-
-    count = st.slider(
-        "Number of Questions",
-        1, 10, 5
-    )
-
-# Generate Code Questions
+mode = st.radio("Activity", ["Generate Question", "Generate Code Questions", "Evaluate Answers", "Improve Answer"])
+if mode == "Generate Question":
+    count = st.slider("Number Of Questions", 1, 10, 5)
 elif mode == "Generate Code Questions":
-
-    topic = st.selectbox(
-        "Select Topic",
-        ["Python", "C++", "C", "DSA", "Aptitude", "Java"]
-    )
-
-    count = st.slider(
-        "Number of Questions",
-        1, 10, 5
-    )
-
-# Evaluate or Improve Answers
+    topic = st.selectbox("Select Topic", ["Python", "C++", "C", "DSA", "Aptitude", "Java"])
+    count = st.slider("Number of Questions", 1, 10, 5)
 else:
-
-    question = st.text_area(
-        "Enter Interview Question Here"
-    )
-
-    answer = st.text_area(
-        "Enter Your Answer",
-        height=160
-    )
-
-# Generate AI Response Button
+    question = st.text_area("Enter Interview Question Here")
+    answer = st.text_area("Enter Your Answer", height=160)
 if st.button("Generate AI Response", type="primary"):
-
-    # Input validation
-    if mode in ["Evaluate Answers", "Improve Answers"]:
-
-        if not question.strip() or not answer.strip():
-            st.warning("Please enter a valid Question and Answer.")
-            st.stop()
-
-    # Topics and difficulty
-    topics = (
-        "Job Role: " + role +
-        "\nDifficulty: " + level
-    )
-
-    # Task generation
-    if mode == "Generate Questions":
-
-        task = (
-            "Generate " + str(count) +
-            " frequently asked interview questions for the job role "
-            + role +
-            ". Include 3 situation-based questions and 2 theory questions."
-        )
-
+    if mode in ["Evaluate Answers", "Improve Answer"] and (not question.strip() or not answer.strip()):
+        st.warning("Please enter a valid question and answer.")
+        st.stop()
+    if mode == "Generate Question":
+        task = "Generate " + str(count) + " Frequently asked Interview Questions: 3 theory and 2 scenario questions. Do not give answers."
     elif mode == "Generate Code Questions":
-
-        task = (
-            "Generate " + str(count) +
-            " frequently asked coding or technical questions "
-            "for the topic " + topic +
-            ". Also provide hints and explain the expected approach."
-        )
-
+        task = "Generate " + str(count) + " Frequently asked coding questions on topic " + topic + " and give hints to solve them. Be accurate."
     elif mode == "Evaluate Answers":
-
-        task = (
-            "Question: " + question +
-            "\nAnswer: " + answer +
-            "\nEvaluate the answer based on the question. "
-            "Identify the drawbacks, strengths, and areas of improvement."
-        )
-
-    elif mode == "Improve Answers":
-
-        task = (
-            "Question: " + question +
-            "\nAnswer: " + answer +
-            "\nImprove the answer and highlight the important points."
-        )
-
-    # Combine instructions
-    prompt = topics + "\n" + task
-
-    # Call Groq API
-    try:
-
-        with st.spinner("Generating AI Response..."):
-
+        task = "Question:" + question + " My Answer:" + answer + " Evaluate my answer based on correctness, relevance, clarity, completeness. Give a score out of 10 and identify mistakes."
+    elif mode == "Improve Answer":
+        task = "Question:" + question + " My Answer:" + answer + " Evaluate my original answer, correct technical mistakes, add missing information, provide a complete improved interview answer in natural English."
+    background = "Job role: " + role + " Difficulty level: " + level
+    with st.spinner("Generating your Answer......"):
+        try:
             response = client.chat.completions.create(
                 model=model,
                 messages=[
                     {
+                        "role": "system",
+                        "content": "Act as a senior Interviewer, both HR and Technical expert"
+                    },
+                    {
                         "role": "user",
-                        "content": prompt
+                        "content": background + task
                     }
                 ],
-                temperature=0.7
+                temperature=0.7,
+                max_tokens=1800
             )
-
-            ai_response = response.choices[0].message.content
-
-        # Display response
-        st.subheader("AI Generated Response")
-        st.write(ai_response)
-
-    except Exception as e:
-        st.error(f"Something went wrong: {e}")
+            output = response.choices[0].message.content
+            st.subheader("AI Response")
+            st.markdown(output)
+            st.download_button(
+                "Download Response",
+                output,
+                file_name="Interview_Response.txt",
+                mime="text/plain"
+            )
+        except Exception as e:
+            st.error(f"API connection was unsuccessful: {e}")
+            st.info("Please check your API key and rate limits.")
+    st.caption("Powered by Streamlit.io And GitHub")
