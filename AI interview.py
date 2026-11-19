@@ -51,7 +51,9 @@ level = st.selectbox(
     ]
 )
 mode= st.radio("Activity",["General Questions","Generate Code Questions","Evaluate Answers","Improve answers"])
-if st.button("Generate AI Response",type = "primary"):
-        if mode == ["Evaluate Answer","Improve Answer"] and (not question.strip())
-       st.warning("please enter a valid Question and Answer")
+if st.button("Generate AI Response",type ="primary"):
+        if mode in ["Evaluate Answer","Improve Answer"] and (not question.strip() or not answer.strip()):
+       st.warning("Please enter a valid Question and Answer.")
         st.stop()
+
+
